@@ -1,0 +1,11 @@
+| ZED Font Creator README |
+---------------------------
+
+
+| OVERVIEW |
+------------
+ZED Font Creator is a tool designed for use with creating ZED engine fonts.
+Three types of font are supported; bitmap, signed-distance field, and vector.
+
+This tool uses the FreeType 2 library for font generation
+
