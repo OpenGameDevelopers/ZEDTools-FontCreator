@@ -11,7 +11,9 @@ namespace ZEDTool
 		GUIElement( );
 		virtual ~GUIElement( );
 
-		void GetBoundingBox( SDL_Rect *p_pBoundingBox );
+		void GetBoundingBox( SDL_Rect *p_pBoundingBox ) const;
+
+		void SetPosition( const int p_X, const int p_Y );
 
 	protected:
 		SDL_Rect	m_BoundingBox;
