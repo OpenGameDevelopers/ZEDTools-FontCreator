@@ -1,5 +1,6 @@
 #include <GUIElement.hpp>
 #include <cstring>
+#include <iostream>
 
 namespace ZEDTool
 {
@@ -29,9 +30,12 @@ namespace ZEDTool
 	{
 		m_BoundingBox.x += p_X;
 		m_BoundingBox.y += p_Y;
+	}
 
-		m_BoundingBox.w += p_X;
-		m_BoundingBox.h += p_Y;
+	void GUIElement::SetSize( const int p_Width, const int p_Height )
+	{
+		m_BoundingBox.w = p_Width;
+		m_BoundingBox.h = p_Height;
 	}
 
 	void GUIElement::SetDebugOutlineColour( const Uint8 p_Red,

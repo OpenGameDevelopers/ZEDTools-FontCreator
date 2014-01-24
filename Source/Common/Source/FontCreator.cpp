@@ -3,6 +3,7 @@
 #include <cstring>
 #include <Helper.hpp>
 #include <iostream>
+#include <GUIButton.hpp>
 
 namespace ZEDTool
 {
@@ -130,10 +131,18 @@ namespace ZEDTool
 			return 1;
 		}
 
-		SDL_MaximizeWindow( m_pWindow );
+		if( FileExists( ConfigPath, false ) != 0 )
+		{
+			SDL_MaximizeWindow( m_pWindow );
+		}
+
+		// Yes, you will need a high-resolution monitor to run this!
+		SDL_SetWindowMinimumSize( m_pWindow, 1024, 768 );
 		SDL_SetRenderDrawColor( m_pRenderer, 140, 140, 140, 255 );
 
 		SDL_RaiseWindow( m_pWindow );
+
+		TTF_Init( );
 
 		return 0;
 	}
@@ -144,6 +153,28 @@ namespace ZEDTool
 		SDL_Event Event;
 
 		m_GUI.SetRenderer( m_pRenderer );
+		GUIButton TestButton;
+		TestButton.SetPosition( 100, 100 );
+		TestButton.SetDebugOutlineColour( 255, 225, 0, 255 );
+
+		// Program directory should definitely be a member variable or a global
+		char *pProgramDirectory = new char[ 255 ];
+		memset( pProgramDirectory, '\0', sizeof( char ) * 255 );
+		if( GetExecutableDirectory( &pProgramDirectory, 255 ) != 0 )
+		{
+			SAFE_DELETE_ARRAY( pProgramDirectory );
+			return 1;
+		}
+		char FontPath[ 255 ];
+		memset( FontPath, '\0', sizeof( FontPath ) * sizeof( FontPath[ 0 ] ) );
+		// For now, the font will need to be placed in the executable directory
+		// This font can be downloaded from Google Fonts:
+		// http://www.google.com/fonts
+		sprintf( FontPath, "%sVT323.ttf", pProgramDirectory );
+		TestButton.SetFont( FontPath, 20 );
+		TestButton.SetText( "TEST BUTTON" );
+
+		m_GUI.AddGUIElement( &TestButton );
 
 		while( Run )
 		{
@@ -160,6 +191,11 @@ namespace ZEDTool
 						case SDLK_ESCAPE:
 						{
 							Run = false;
+							break;
+						}
+						case SDLK_F1:
+						{
+							m_GUI.ToggleDebugRendering( );
 							break;
 						}
 						default:
@@ -179,15 +215,6 @@ namespace ZEDTool
 		int X, Y, Width, Height;
 		SDL_GetWindowPosition( m_pWindow, &X, &Y );
 		SDL_GetWindowSize( m_pWindow, &Width, &Height );
-
-		char *pProgramDirectory = new char[ 255 ];
-		memset( pProgramDirectory, '\0', sizeof( char ) * 255 );
-
-		if( GetExecutableDirectory( &pProgramDirectory, 255 ) != 0 )
-		{
-			SAFE_DELETE_ARRAY( pProgramDirectory );
-			return 1;
-		}
 
 		char ConfigPath[ 255 ];
 		memset( ConfigPath, '\0',
@@ -229,6 +256,7 @@ namespace ZEDTool
 
 	void FontCreator::CleanUp( )
 	{
+		TTF_Quit( );
 		SDL_DestroyRenderer( m_pRenderer );
 		SDL_DestroyWindow( m_pWindow );
 		SDL_Quit( );

@@ -19,6 +19,8 @@ namespace ZEDTool
 
 		void ToggleDebugRendering( );
 
+		int AddGUIElement( GUIElement * const &p_pElement );
+
 	private:
 		void RenderDebugOverlay( ) const;
 

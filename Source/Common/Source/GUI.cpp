@@ -34,6 +34,16 @@ namespace ZEDTool
 			&PreviousColour.Green, &PreviousColour.Blue,
 			&PreviousColour.Alpha );
 
+		GUIElementList::const_iterator ElementIterator =
+			m_GUIElements.begin( );
+
+		while( ElementIterator != m_GUIElements.end( ) )
+		{
+			( *ElementIterator )->Render( m_pRenderer );
+
+			++ElementIterator;
+		}
+
 		if( m_RenderDebugMode )
 		{
 			this->RenderDebugOverlay( );
@@ -46,6 +56,13 @@ namespace ZEDTool
 	void GUIManager::ToggleDebugRendering( )
 	{
 		m_RenderDebugMode = !m_RenderDebugMode;
+	}
+
+	int GUIManager::AddGUIElement( GUIElement * const &p_pElement )
+	{
+		m_GUIElements.push_back( p_pElement );
+
+		return 0;
 	}
 
 	void GUIManager::RenderDebugOverlay( ) const
