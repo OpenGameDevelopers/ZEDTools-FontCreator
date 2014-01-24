@@ -67,15 +67,43 @@ namespace ZEDTool
 
 			pConfigFile = fopen( ConfigPath, "rb" );
 
-			if( pConfigFile )
-			{
-				fread( &X, sizeof( int ), 1, pConfigFile );
-				fread( &Y, sizeof( int ), 1, pConfigFile );
-				fread( &Width, sizeof( int ), 1, pConfigFile );
-				fread( &Height, sizeof( int ), 1, pConfigFile );
+			size_t FileSize = 0;
 
-				fclose( pConfigFile );
-				pConfigFile = NULL;
+			fseek( pConfigFile, 0, SEEK_END );
+			FileSize = ftell( pConfigFile );
+			rewind( pConfigFile );
+
+			// Make sure that the file is at least somewhat valid
+			if( FileSize >= sizeof( int ) * 4 )
+			{
+				if( pConfigFile )
+				{
+					size_t XRead, YRead, WidthRead, HeightRead;
+					int TmpX, TmpY, TmpWidth, TmpHeight;
+					XRead = fread( &TmpX, 1, sizeof( int ), pConfigFile );
+					YRead = fread( &TmpY, 1, sizeof( int ), pConfigFile );
+					WidthRead = fread( &TmpWidth, 1, sizeof( int ),
+						pConfigFile );
+					HeightRead = fread( &TmpHeight, 1, sizeof( int ),
+						pConfigFile );
+
+					if( ( XRead != sizeof( int ) ) ||
+						( YRead != sizeof( int ) ) ||
+						( WidthRead != sizeof( int ) ) ||
+						( HeightRead != sizeof( int ) ) )
+					{
+					}
+					else
+					{
+						X = TmpX;
+						Y = TmpY;
+						Width = TmpWidth;
+						Height= TmpHeight;
+					}
+
+					fclose( pConfigFile );
+					pConfigFile = NULL;
+				}
 			}
 		}
 		else
@@ -168,13 +196,27 @@ namespace ZEDTool
 
 		if( pConfigFile )
 		{
-			fwrite( &X, sizeof( int ), 1, pConfigFile );
-			fwrite( &Y, sizeof( int ), 1, pConfigFile );
-			fwrite( &Width, sizeof( int ), 1, pConfigFile );
-			fwrite( &Height, sizeof( int ), 1, pConfigFile );
+			// Ensure the file was written correctly
+			size_t XWrite, YWrite, WidthWrite, HeightWrite;
+			XWrite = fwrite( &X, 1, sizeof( int ), pConfigFile );
+			YWrite = fwrite( &Y, 1, sizeof( int ), pConfigFile );
+			WidthWrite = fwrite( &Width, 1, sizeof( int ), pConfigFile );
+			HeightWrite = fwrite( &Height, 1, sizeof( int ), pConfigFile );
 
-			fclose( pConfigFile );
-			pConfigFile = NULL;
+			if( ( XWrite != sizeof( int ) ) || ( YWrite != sizeof( int ) ) ||
+				( WidthWrite != sizeof( int ) ) ||
+				( HeightWrite != sizeof( int ) ) )
+			{
+				fclose( pConfigFile );
+				pConfigFile = NULL;
+
+				remove( ConfigPath );
+			}
+			else
+			{
+				fclose( pConfigFile );
+				pConfigFile = NULL;
+			}
 		}
 
 		SAFE_DELETE_ARRAY( pProgramDirectory );
