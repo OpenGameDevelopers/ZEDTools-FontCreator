@@ -15,12 +15,19 @@ namespace ZEDTool
 
 		int SetRenderer( SDL_Renderer * const &p_pRenderer );
 
-		void RenderDebugOverlay( ) const;
+		void Render( );
+
+		void ToggleDebugRendering( );
 
 	private:
-		std::list< GUIElement * > m_GUIElements;
+		void RenderDebugOverlay( ) const;
 
+		typedef std::list< GUIElement * > GUIElementList;
+
+		GUIElementList	m_GUIElements;
 		SDL_Renderer	*m_pRenderer;
+
+		bool m_RenderDebugMode;
 	};
 }
 

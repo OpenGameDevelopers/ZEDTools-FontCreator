@@ -143,6 +143,8 @@ namespace ZEDTool
 		bool Run = true;
 		SDL_Event Event;
 
+		m_GUI.SetRenderer( m_pRenderer );
+
 		while( Run )
 		{
 			while( SDL_PollEvent( &Event ) != 0 )
@@ -169,6 +171,7 @@ namespace ZEDTool
 			}
 
 			SDL_RenderClear( m_pRenderer );
+			m_GUI.Render( );
 			SDL_RenderPresent( m_pRenderer );
 		}
 

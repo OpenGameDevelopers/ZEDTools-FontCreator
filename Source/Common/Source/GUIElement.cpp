@@ -51,5 +51,10 @@ namespace ZEDTool
 		( *p_pBlue ) = m_DebugColour.Blue;
 		( *p_pAlpha ) = m_DebugColour.Alpha;
 	}
+
+	void GUIElement::GetDebugOutlineColour( Colour *p_pColour ) const
+	{
+		memcpy( p_pColour, &m_DebugColour, sizeof( m_DebugColour ) );
+	}
 }
 

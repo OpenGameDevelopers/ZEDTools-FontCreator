@@ -2,6 +2,7 @@
 #define __ZEDTOOL_FONTCREATOR_HPP__
 
 #include <SDL2/SDL.h>
+#include <GUI.hpp>
 
 namespace ZEDTool
 {
@@ -20,6 +21,8 @@ namespace ZEDTool
 
 		SDL_Window		*m_pWindow;
 		SDL_Renderer	*m_pRenderer;
+
+		GUIManager		m_GUI;
 	};
 }
 

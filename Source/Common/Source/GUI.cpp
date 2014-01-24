@@ -1,9 +1,11 @@
 #include <GUI.hpp>
+#include <Helper.hpp>
 
 namespace ZEDTool
 {
 	GUIManager::GUIManager( ) :
-		m_pRenderer( NULL )
+		m_pRenderer( NULL ),
+		m_RenderDebugMode( false )
 	{
 	}
 
@@ -25,8 +27,45 @@ namespace ZEDTool
 		return 0;
 	}
 
+	void GUIManager::Render( )
+	{
+		Colour PreviousColour;
+		SDL_GetRenderDrawColor( m_pRenderer, &PreviousColour.Red,
+			&PreviousColour.Green, &PreviousColour.Blue,
+			&PreviousColour.Alpha );
+
+		if( m_RenderDebugMode )
+		{
+			this->RenderDebugOverlay( );
+		}
+
+		SDL_SetRenderDrawColor( m_pRenderer, PreviousColour.Red,
+			PreviousColour.Green, PreviousColour.Blue, PreviousColour.Alpha );
+	}
+
+	void GUIManager::ToggleDebugRendering( )
+	{
+		m_RenderDebugMode = !m_RenderDebugMode;
+	}
+
 	void GUIManager::RenderDebugOverlay( ) const
 	{
+		GUIElementList::const_iterator ElementIterator =
+			m_GUIElements.begin( );
+
+		for( size_t i = 0; i < m_GUIElements.size( ); ++i )
+		{
+			SDL_Rect OutlineBorder;
+			( *ElementIterator )->GetBoundingBox( &OutlineBorder );
+			Colour OutlineColour;
+			( *ElementIterator )->GetDebugOutlineColour( &OutlineColour );
+
+			SDL_SetRenderDrawColor( m_pRenderer, OutlineColour.Red,
+				OutlineColour.Green, OutlineColour.Blue, OutlineColour.Alpha );
+			SDL_RenderDrawRect( m_pRenderer, &OutlineBorder );
+
+			++ElementIterator;
+		}
 	}
 }
 

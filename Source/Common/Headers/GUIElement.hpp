@@ -28,6 +28,7 @@ namespace ZEDTool
 
 		void GetDebugOutlineColour( Uint8 *p_pRed, Uint8 *p_pGreen,
 			Uint8 *p_pBlue, Uint8 *p_pAlpha ) const;
+		void GetDebugOutlineColour( Colour *p_pColour ) const;
 
 	protected:
 		SDL_Rect	m_BoundingBox;
