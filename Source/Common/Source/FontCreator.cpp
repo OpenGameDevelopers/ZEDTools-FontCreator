@@ -1,6 +1,8 @@
 #include <FontCreator.hpp>
 #include <GitVersion.hpp>
 #include <cstring>
+#include <Helper.hpp>
+#include <iostream>
 
 namespace ZEDTool
 {
@@ -35,10 +37,57 @@ namespace ZEDTool
 		sprintf( Buffer, " | DEBUG" );
 		strcat( WindowTitle, Buffer );
 #endif
+	
+		// Attempt to load the settings from the previous session
+		char *pProgramDirectory = new char[ 255 ];
+		memset( pProgramDirectory, '\0', sizeof( char ) * 255 );
+
+		if( GetExecutableDirectory( &pProgramDirectory, 255 ) != 0 )
+		{
+			SAFE_DELETE_ARRAY( pProgramDirectory );
+
+			return 1;
+		}
+
+		char ConfigPath[ 255 ];
+		memset( ConfigPath, '\0',
+			sizeof( ConfigPath ) * sizeof( ConfigPath[ 0 ] ) );
+
+		sprintf( ConfigPath, "%sdefault.config", pProgramDirectory );
+
+		int X = SDL_WINDOWPOS_CENTERED, Y = SDL_WINDOWPOS_CENTERED;
+		int Width = 1024, Height = 768;
+
+		if( FileExists( ConfigPath, false ) == 0 )
+		{
+			// The file is just the x, y position and the width and height
+			// When the configuration file needs to get more complex, this will
+			// be revisited
+			FILE *pConfigFile = NULL;
+
+			pConfigFile = fopen( ConfigPath, "rb" );
+
+			if( pConfigFile )
+			{
+				fread( &X, sizeof( int ), 1, pConfigFile );
+				fread( &Y, sizeof( int ), 1, pConfigFile );
+				fread( &Width, sizeof( int ), 1, pConfigFile );
+				fread( &Height, sizeof( int ), 1, pConfigFile );
+
+				fclose( pConfigFile );
+				pConfigFile = NULL;
+			}
+		}
+		else
+		{
+			std::cout << "<WARNING> Could not read configuration file: " <<
+				ConfigPath << std::endl;
+		}
+
+		SAFE_DELETE_ARRAY( pProgramDirectory );
 
 		m_pWindow = SDL_CreateWindow( WindowTitle,
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600,
-			SDL_WINDOW_RESIZABLE );
+			X, Y, Width, Height, SDL_WINDOW_RESIZABLE );
 
 		if( m_pWindow == NULL )
 		{
@@ -54,7 +103,7 @@ namespace ZEDTool
 		}
 
 		SDL_MaximizeWindow( m_pWindow );
-		SDL_SetRenderDrawColor( m_pRenderer, 32, 0, 32, 255 );
+		SDL_SetRenderDrawColor( m_pRenderer, 140, 140, 140, 255 );
 
 		SDL_RaiseWindow( m_pWindow );
 
@@ -94,6 +143,41 @@ namespace ZEDTool
 			SDL_RenderClear( m_pRenderer );
 			SDL_RenderPresent( m_pRenderer );
 		}
+
+		// Save the current window size and position for the next time
+		int X, Y, Width, Height;
+		SDL_GetWindowPosition( m_pWindow, &X, &Y );
+		SDL_GetWindowSize( m_pWindow, &Width, &Height );
+
+		char *pProgramDirectory = new char[ 255 ];
+		memset( pProgramDirectory, '\0', sizeof( char ) * 255 );
+
+		if( GetExecutableDirectory( &pProgramDirectory, 255 ) != 0 )
+		{
+			SAFE_DELETE_ARRAY( pProgramDirectory );
+			return 1;
+		}
+
+		char ConfigPath[ 255 ];
+		memset( ConfigPath, '\0',
+			sizeof( ConfigPath ) * sizeof( ConfigPath[ 0 ] ) );
+		sprintf( ConfigPath, "%sdefault.config", pProgramDirectory );
+
+		FILE *pConfigFile = NULL;
+		pConfigFile = fopen( ConfigPath, "wb" );
+
+		if( pConfigFile )
+		{
+			fwrite( &X, sizeof( int ), 1, pConfigFile );
+			fwrite( &Y, sizeof( int ), 1, pConfigFile );
+			fwrite( &Width, sizeof( int ), 1, pConfigFile );
+			fwrite( &Height, sizeof( int ), 1, pConfigFile );
+
+			fclose( pConfigFile );
+			pConfigFile = NULL;
+		}
+
+		SAFE_DELETE_ARRAY( pProgramDirectory );
 
 		return 0;
 	}
