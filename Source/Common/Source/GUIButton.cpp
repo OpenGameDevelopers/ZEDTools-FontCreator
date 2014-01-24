@@ -32,14 +32,14 @@ namespace ZEDTool
 		}
 	}
 
-	int GUIButton::SetFont( const char *p_pFontFile, const int p_FontSize )
+	int GUIButton::SetFont( TTF_Font * const &p_pFont )
 	{
-		m_pFont = TTF_OpenFont( p_pFontFile, p_FontSize );
-
-		if( !m_pFont )
+		if( !p_pFont )
 		{
 			return 1;
 		}
+
+		m_pFont = p_pFont;
 
 		return 0;
 	}
@@ -95,6 +95,11 @@ namespace ZEDTool
 			SDL_FreeSurface( Text );
 			SDL_DestroyTexture( Texture );
 		}
+	}
+
+	const char *GUIButton::GetName( ) const
+	{
+		return "Button";
 	}
 }
 

@@ -32,6 +32,7 @@ namespace ZEDTool
 		void GetDebugOutlineColour( Colour *p_pColour ) const;
 
 		virtual void Render( SDL_Renderer * const &p_pRenderer ) = 0;
+		virtual const char *GetName( ) const = 0;
 
 	protected:
 		SDL_Rect	m_BoundingBox;

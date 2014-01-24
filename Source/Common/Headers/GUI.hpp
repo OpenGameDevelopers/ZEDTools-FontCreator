@@ -3,6 +3,7 @@
 
 #include <GUIElement.hpp>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <list>
 
 namespace ZEDTool
@@ -21,6 +22,8 @@ namespace ZEDTool
 
 		int AddGUIElement( GUIElement * const &p_pElement );
 
+		int SetFont( const char *p_pFontFile, const int p_PointSize );
+
 	private:
 		void RenderDebugOverlay( ) const;
 
@@ -28,8 +31,8 @@ namespace ZEDTool
 
 		GUIElementList	m_GUIElements;
 		SDL_Renderer	*m_pRenderer;
-
-		bool m_RenderDebugMode;
+		TTF_Font		*m_pFont;
+		bool			m_RenderDebugMode;
 	};
 }
 

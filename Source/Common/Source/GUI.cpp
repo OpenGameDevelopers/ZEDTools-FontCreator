@@ -1,5 +1,6 @@
 #include <GUI.hpp>
 #include <Helper.hpp>
+#include <GUIButton.hpp>
 
 namespace ZEDTool
 {
@@ -60,7 +61,24 @@ namespace ZEDTool
 
 	int GUIManager::AddGUIElement( GUIElement * const &p_pElement )
 	{
+		if( strcmp( p_pElement->GetName( ), "Button" ) == 0 )
+		{
+			reinterpret_cast< GUIButton * >( p_pElement )->SetFont( m_pFont );
+		}
+
 		m_GUIElements.push_back( p_pElement );
+
+		return 0;
+	}
+
+	int GUIManager::SetFont( const char *p_pFontFile, const int p_PointSize )
+	{
+		m_pFont = TTF_OpenFont( p_pFontFile, p_PointSize );
+
+		if( !m_pFont )
+		{
+			return 1;
+		}
 
 		return 0;
 	}

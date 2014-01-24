@@ -150,10 +150,6 @@ namespace ZEDTool
 		SDL_Event Event;
 
 		m_GUI.SetRenderer( m_pRenderer );
-		GUIButton TestButton;
-		TestButton.SetPosition( 100, 100 );
-		TestButton.SetDebugOutlineColour( 255, 225, 0, 255 );
-
 		char FontPath[ 255 ];
 		memset( FontPath, '\0', sizeof( FontPath ) * sizeof( FontPath[ 0 ] ) );
 		// For now, the font will need to be placed in the executable directory
@@ -161,7 +157,13 @@ namespace ZEDTool
 		// http://www.google.com/fonts
 		// Search for: VT323
 		sprintf( FontPath, "%sVT323.ttf", m_pExecutableDirectory );
-		TestButton.SetFont( FontPath, 20 );
+		m_GUI.SetFont( FontPath, 20 );
+		
+		GUIButton TestButton;
+		TestButton.SetPosition( 100, 100 );
+		TestButton.SetDebugOutlineColour( 255, 225, 0, 255 );
+
+
 		TestButton.SetText( "TEST BUTTON" );
 
 		m_GUI.AddGUIElement( &TestButton );

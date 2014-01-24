@@ -16,9 +16,11 @@ namespace ZEDTool
 		void SetText( const char *p_pText );
 		// Maybe the font should be set from the GUIManager?  Perhaps even
 		// residing within that class.
-		int SetFont( const char *p_pFontFile, const int p_FontSize );
+		int SetFont( TTF_Font * const &p_pFont );
 
 		virtual void Render( SDL_Renderer * const &p_pRenderer );
+
+		virtual const char *GetName( ) const;
 
 	private:
 		char		*m_pText;
