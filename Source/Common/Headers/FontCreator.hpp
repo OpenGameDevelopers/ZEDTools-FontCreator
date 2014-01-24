@@ -21,8 +21,8 @@ namespace ZEDTool
 
 		SDL_Window		*m_pWindow;
 		SDL_Renderer	*m_pRenderer;
-
 		GUIManager		m_GUI;
+		char			*m_pExecutableDirectory;
 	};
 }
 

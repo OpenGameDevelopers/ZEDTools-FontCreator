@@ -9,7 +9,8 @@ namespace ZEDTool
 {
 	FontCreator::FontCreator( ) :
 		m_pWindow( NULL ),
-		m_pRenderer( NULL )
+		m_pRenderer( NULL ),
+		m_pExecutableDirectory( NULL )
 	{
 	}
 
@@ -40,13 +41,11 @@ namespace ZEDTool
 #endif
 	
 		// Attempt to load the settings from the previous session
-		char *pProgramDirectory = new char[ 255 ];
-		memset( pProgramDirectory, '\0', sizeof( char ) * 255 );
+		m_pExecutableDirectory = new char[ 255 ];
+		memset( m_pExecutableDirectory, '\0', sizeof( char ) * 255 );
 
-		if( GetExecutableDirectory( &pProgramDirectory, 255 ) != 0 )
+		if( GetExecutableDirectory( &m_pExecutableDirectory, 255 ) != 0 )
 		{
-			SAFE_DELETE_ARRAY( pProgramDirectory );
-
 			return 1;
 		}
 
@@ -54,7 +53,7 @@ namespace ZEDTool
 		memset( ConfigPath, '\0',
 			sizeof( ConfigPath ) * sizeof( ConfigPath[ 0 ] ) );
 
-		sprintf( ConfigPath, "%sdefault.config", pProgramDirectory );
+		sprintf( ConfigPath, "%sdefault.config", m_pExecutableDirectory );
 
 		int X = SDL_WINDOWPOS_CENTERED, Y = SDL_WINDOWPOS_CENTERED;
 		int Width = 1024, Height = 768;
@@ -113,8 +112,6 @@ namespace ZEDTool
 				ConfigPath << std::endl;
 		}
 
-		SAFE_DELETE_ARRAY( pProgramDirectory );
-
 		m_pWindow = SDL_CreateWindow( WindowTitle,
 			X, Y, Width, Height, SDL_WINDOW_RESIZABLE );
 
@@ -157,20 +154,13 @@ namespace ZEDTool
 		TestButton.SetPosition( 100, 100 );
 		TestButton.SetDebugOutlineColour( 255, 225, 0, 255 );
 
-		// Program directory should definitely be a member variable or a global
-		char *pProgramDirectory = new char[ 255 ];
-		memset( pProgramDirectory, '\0', sizeof( char ) * 255 );
-		if( GetExecutableDirectory( &pProgramDirectory, 255 ) != 0 )
-		{
-			SAFE_DELETE_ARRAY( pProgramDirectory );
-			return 1;
-		}
 		char FontPath[ 255 ];
 		memset( FontPath, '\0', sizeof( FontPath ) * sizeof( FontPath[ 0 ] ) );
 		// For now, the font will need to be placed in the executable directory
 		// This font can be downloaded from Google Fonts:
 		// http://www.google.com/fonts
-		sprintf( FontPath, "%sVT323.ttf", pProgramDirectory );
+		// Search for: VT323
+		sprintf( FontPath, "%sVT323.ttf", m_pExecutableDirectory );
 		TestButton.SetFont( FontPath, 20 );
 		TestButton.SetText( "TEST BUTTON" );
 
@@ -219,7 +209,7 @@ namespace ZEDTool
 		char ConfigPath[ 255 ];
 		memset( ConfigPath, '\0',
 			sizeof( ConfigPath ) * sizeof( ConfigPath[ 0 ] ) );
-		sprintf( ConfigPath, "%sdefault.config", pProgramDirectory );
+		sprintf( ConfigPath, "%sdefault.config", m_pExecutableDirectory );
 
 		FILE *pConfigFile = NULL;
 		pConfigFile = fopen( ConfigPath, "wb" );
@@ -249,7 +239,6 @@ namespace ZEDTool
 			}
 		}
 
-		SAFE_DELETE_ARRAY( pProgramDirectory );
 
 		return 0;
 	}
@@ -260,6 +249,7 @@ namespace ZEDTool
 		SDL_DestroyRenderer( m_pRenderer );
 		SDL_DestroyWindow( m_pWindow );
 		SDL_Quit( );
+		SAFE_DELETE_ARRAY( m_pExecutableDirectory );
 	}
 }
 
