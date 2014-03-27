@@ -13,12 +13,12 @@ MAJOR_BUILD_NUM=`echo $VERSION_NUM | sed 's/-[^.]*$//' | sed -r 's/.[^.]*$//' | 
 MINOR_BUILD_NUM=`echo $VERSION_NUM | sed 's/-[^.]*$//' | sed -r 's/.[^.]*$//' | sed -r 's/.[.]*//'`
 REVISION_BUILD_NUM=`echo $VERSION_NUM | sed 's/-[^.]*$//' | sed -r 's/.*(.[0-9].)//'`
 BUILD_NUM=`echo $VERSION_NUM | sed -e 's/[0-9].[0-9].[0-9]//' -e 's/-//'`
+BRANCH=`git rev-parse --abbrev-ref HEAD`
 
-printf "Generating $2 Git Version Header...\n"
-printf "Revision: $GITROLLINGCOUNT [$GITHASH] $GITDATE\n"
+printf "Generating $2 Git Version Header... "
 
-printf "#ifndef __%s_GITVERSION_HPP__\n" $PROJECT > $GITHEADER
-printf "#define __%s_GITVERSION_HPP__\n\n" $PROJECT >> $GITHEADER
+printf "#ifndef __%s_GITVERSION_H__\n" $PROJECT > $GITHEADER
+printf "#define __%s_GITVERSION_H__\n\n" $PROJECT >> $GITHEADER
 
 printf "#define GIT_COMMITHASH			\"%s\"\n" "$GITHASH" >> $GITHEADER
 printf "#define GIT_COMMITHASHSHORT		\"%s\"\n" "$GITHASHSHORT" >> $GITHEADER
@@ -30,7 +30,10 @@ printf "#define GIT_MINOR_BUILD_VERSION		%d\n" $MINOR_BUILD_NUM >> $GITHEADER
 printf "#define GIT_REVISION_BUILD_NUM		%d\n" $REVISION_BUILD_NUM >> $GITHEADER
 printf "#define GIT_BUILD_NUM				%d\n" $BUILD_NUM >> $GITHEADER
 printf "#define GIT_BUILD_VERSION			\"%d.%d.%d.%d\"\n" $MAJOR_BUILD_NUM $MINOR_BUILD_NUM $REVISION_BUILD_NUM $BUILD_NUM >> $GITHEADER
-printf "#define GIT_TAG_NAME				\"%s\"\n\n" $TAG_NAME >> $GITHEADER
+printf "#define GIT_TAG_NAME				\"%s\"\n" $TAG_NAME >> $GITHEADER
+printf "#define GIT_BRANCH					\"%s\"\n\n" $BRANCH >> $GITHEADER
 printf "#endif\n" >> $GITHEADER
 
 printf "Done\n"
+
+printf "Revision: $MAJOR_BUILD_NUM.$MINOR_BUILD_NUM.$REVISION_BUILD_NUM.$BUILD_NUM [$GITHASH] $GITDATE //$TAG_NAME\n"

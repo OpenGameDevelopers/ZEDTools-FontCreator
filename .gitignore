@@ -33,6 +33,7 @@ Gen
 *.aps
 *.pch
 local.properties
+Source/Makefile
 
 # Temporary Vim #
 *.swp
