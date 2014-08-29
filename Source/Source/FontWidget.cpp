@@ -1,5 +1,6 @@
 #include <FontWidget.h>
 #include <QPainter>
+#include <QPen>
 
 #define TRUNC(x) ((x) >> 6)
 
@@ -92,6 +93,7 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 		int PreviousX = 0;
 		Painter.fillRect( Painter.window( ),
 			QBrush( QColor( 0, 0, 0, 255 ) ) );
+		QPen OutlinePen( QColor( 0, 255, 0, 255 ), 1 );
 
 		for( ; FaceItr != m_Faces.end( ); ++FaceItr )
 		{
@@ -123,6 +125,24 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 			Painter.drawImage( QPoint( 0, 0 ), GlyphImage );
 			PreviousX = ( *FaceItr ).Rect.width( )*2;
+
+			Painter.setPen( OutlinePen );
+			// Bottom line
+			Painter.drawLine( ( *FaceItr ).Rect.x( ),
+				( *FaceItr ).Rect.height( ),
+				( *FaceItr ).Rect.width( ), ( *FaceItr ).Rect.height( ) );
+			// Top line
+			Painter.drawLine( ( *FaceItr ).Rect.x( ),
+				( *FaceItr ).Rect.y( ), ( *FaceItr ).Rect.width( ),
+				( *FaceItr ).Rect.y( ) );
+			// Left line
+			Painter.drawLine( ( *FaceItr ).Rect.x( ),
+				( *FaceItr ).Rect.y( ), ( *FaceItr ).Rect.x( ),
+				( *FaceItr ).Rect.height( ) );
+			// Right line
+			Painter.drawLine( ( *FaceItr ).Rect.width( ),
+				( *FaceItr ).Rect.y( ), ( *FaceItr ).Rect.width( ),
+				( *FaceItr ).Rect.height( ) );
 		}
 	}
 }
