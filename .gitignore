@@ -54,8 +54,12 @@ Source/Makefile
 
 # Git version header #
 GitVersion.hpp
+GitVersion.h
 
 # LaTeX temporary files
 *.aux
 *.log
 *.toc
+
+# Qt temporary files #
+moc_*

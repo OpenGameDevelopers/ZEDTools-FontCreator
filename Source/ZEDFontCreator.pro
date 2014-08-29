@@ -26,13 +26,17 @@ TEMPLATE = app
 
 SOURCES +=\
 	Source/MainWindow.cpp \
-    Source/Main.cpp 
+    Source/Main.cpp \
+	Source/FontWidget.cpp
 
 
-INCLUDEPATH += ./Headers
+INCLUDEPATH += ./Headers /usr/include/freetype2
+
+LIBS += -lfreetype
 
 HEADERS  +=\
-	Headers/MainWindow.h 
+	Headers/MainWindow.h \
+	Headers/FontWidget.h
 
 versioninfo.target = Headers/GitVersion.h
 versioninfo.commands = @mkdir -p Headers;\
