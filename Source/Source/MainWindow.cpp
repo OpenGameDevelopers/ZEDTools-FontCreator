@@ -5,6 +5,7 @@
 #include <QMenuBar>
 #include <QVBoxLayout>
 #include <QFileDialog>
+#include <FontWidget.h>
 
 MainWindow::MainWindow( )
 {
@@ -58,5 +59,7 @@ void MainWindow::OpenFontFile( )
 		tr( "" ), tr( "Font Files (*.ttf)" ) );
 	printf( "%s\n", m_FontFile.toUtf8( ).constData( ) );
 	fflush( stdout );
+	m_pFontWidget = new FontWidget( m_FontFile );
+	setCentralWidget( m_pFontWidget );
 }
 

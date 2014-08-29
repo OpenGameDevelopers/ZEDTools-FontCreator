@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+class FontWidget;
+
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -21,6 +23,7 @@ private:
 	QAction	*m_pQuitAction;
 	QAction	*m_pOpenFontFile;
 	QString	m_FontFile;
+	FontWidget	*m_pFontWidget;
 
 public slots:
 	void OpenFontFile( );
