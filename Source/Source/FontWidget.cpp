@@ -94,11 +94,11 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 		Painter.fillRect( Painter.window( ),
 			QBrush( QColor( 0, 0, 0, 255 ) ) );
 		QPen OutlinePen( QColor( 0, 255, 0, 255 ), 1 );
+		QPen BaseLinePen( QColor( 255, 0, 0, 255 ), 1 );
+		QPen AdvancePen( QColor( 0, 255, 255, 255 ), 1 );
 
 		for( ; FaceItr != m_Faces.end( ); ++FaceItr )
 		{
-			printf( "Drawing at: %d %d\n", -( *FaceItr ).Rect.x( ),
-				-( *FaceItr ).Rect.y( ) );
 			Painter.translate( -( *FaceItr ).Rect.x( ),
 				-( *FaceItr ).Rect.y( ) );
 
@@ -112,8 +112,6 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 				QImage::Format_Indexed8 );
 
 			Painter.translate( PreviousX,
-				( *FaceItr ).Rect.y( ) );
-			printf( "Translating to: %d %d\n", PreviousX,
 				( *FaceItr ).Rect.y( ) );
 
 			QVector< QRgb > ColourTable;
@@ -143,6 +141,21 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			Painter.drawLine( ( *FaceItr ).Rect.width( ),
 				( *FaceItr ).Rect.y( ), ( *FaceItr ).Rect.width( ),
 				( *FaceItr ).Rect.height( ) );
+			
+			Painter.setPen( BaseLinePen );
+			// Base line
+			Painter.drawLine( ( *FaceItr ).Rect.x( ),
+				( *FaceItr ).Face->glyph->metrics.horiBearingY / 64,
+				( *FaceItr ).Rect.width( ),
+				( *FaceItr ).Face->glyph->metrics.horiBearingY / 64);
+
+			Painter.setPen( AdvancePen );
+			// Advance
+			Painter.drawLine( ( *FaceItr ).Rect.x( ),//Face->glyph->metrics.Advance / 64,
+				( *FaceItr ).Rect.height( )+10,
+				( *FaceItr ).Face->glyph->metrics.horiAdvance / 64,
+				( *FaceItr ).Rect.height( )+10 );
+				
 		}
 	}
 }
