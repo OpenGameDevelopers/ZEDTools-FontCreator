@@ -18,7 +18,8 @@ class FontWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	FontWidget( QString &p_FontFile, QWidget *p_pParent = 0 );
+	FontWidget( QString &p_FontFile, const int p_Width, const int p_Height,
+		QWidget *p_pParent = 0 );
 	~FontWidget( );
 
 private:
@@ -27,6 +28,10 @@ private:
 
 	FT_Library		m_FTLibrary;
 	FontArray		m_Faces;
+
+	int		m_Padding;
+	int		m_Width;
+	int		m_Height;
 };
 
 #endif // __ZEETOOL_FONTCREATOR_FONTWIDGET_H__

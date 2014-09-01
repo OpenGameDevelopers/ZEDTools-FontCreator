@@ -59,7 +59,7 @@ void MainWindow::OpenFontFile( )
 		tr( "" ), tr( "Font Files (*.ttf)" ) );
 	printf( "%s\n", m_FontFile.toUtf8( ).constData( ) );
 	fflush( stdout );
-	m_pFontWidget = new FontWidget( m_FontFile );
+	m_pFontWidget = new FontWidget( m_FontFile, 256, 256 );
 	setCentralWidget( m_pFontWidget );
 }
 

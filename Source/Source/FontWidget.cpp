@@ -4,8 +4,17 @@
 
 #define TRUNC(x) ((x) >> 6)
 
-FontWidget::FontWidget( QString &p_FontFile, QWidget *p_pParent )
+FontWidget::FontWidget( QString &p_FontFile, const int p_Width,
+	const int p_Height, QWidget *p_pParent )
 {
+	setMinimumSize( p_Width, p_Height );
+	setMaximumSize( p_Width, p_Height );
+
+	m_Width = p_Width;
+	m_Height = p_Height;
+
+	m_Padding = 3;
+
 	FT_Error Error = FT_Err_Ok;
 
 	m_FTLibrary = 0;
@@ -14,7 +23,7 @@ FontWidget::FontWidget( QString &p_FontFile, QWidget *p_pParent )
 
 	if( !Error )
 	{
-		for( int i = 0; i < 26; ++i )
+		for( int i = 0; i < 26+6+26; ++i )
 		{
 			FONT_RENDER FontRender;
 			Error = FT_New_Face( m_FTLibrary,
@@ -90,29 +99,42 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 		FontArray::const_iterator FaceItr = m_Faces.begin( );
 
-		int PreviousX = 0;
 		Painter.fillRect( Painter.window( ),
 			QBrush( QColor( 0, 0, 0, 255 ) ) );
 		QPen OutlinePen( QColor( 0, 255, 0, 255 ), 1 );
 		QPen BaseLinePen( QColor( 255, 0, 0, 255 ), 1 );
 		QPen AdvancePen( QColor( 0, 255, 255, 255 ), 1 );
 
+		int CurrentMaxHeight = 0;
+		int CurrentXPosition = m_Padding;
+		int CurrentYPosition = 0;
+
+		Painter.translate( m_Padding, m_Padding );
+
 		for( ; FaceItr != m_Faces.end( ); ++FaceItr )
 		{
-			Painter.translate( -( *FaceItr ).Rect.x( ),
-				-( *FaceItr ).Rect.y( ) );
-
 			Error = FT_Render_Glyph( ( *FaceItr ).Face->glyph,
-			FT_RENDER_MODE_NORMAL );
+				FT_RENDER_MODE_NORMAL );
+
+			CurrentXPosition += ( ( *FaceItr ).Face->glyph->bitmap.width ) +
+				m_Padding;
+
+			if( CurrentXPosition > m_Width )
+			{
+				printf( "Reset\n" );
+				Painter.resetTransform( );
+				CurrentYPosition += CurrentMaxHeight;
+				Painter.translate( m_Padding, CurrentYPosition + m_Padding );
+				CurrentXPosition = m_Padding +
+					( *FaceItr ).Face->glyph->bitmap.width;
+				CurrentMaxHeight = 0;
+			}
 
 			QImage GlyphImage( ( *FaceItr ).Face->glyph->bitmap.buffer,
 				( *FaceItr ).Face->glyph->bitmap.width,
 				( *FaceItr ).Face->glyph->bitmap.rows,
 				( *FaceItr ).Face->glyph->bitmap.pitch,
 				QImage::Format_Indexed8 );
-
-			Painter.translate( PreviousX,
-				( *FaceItr ).Rect.y( ) );
 
 			QVector< QRgb > ColourTable;
 			for( int i = 0; i < 256; ++i )
@@ -122,7 +144,6 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			GlyphImage.setColorTable( ColourTable );
 
 			Painter.drawImage( QPoint( 0, 0 ), GlyphImage );
-			PreviousX = ( *FaceItr ).Rect.width( )*2;
 
 			Painter.setPen( OutlinePen );
 			// Bottom line
@@ -151,11 +172,18 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 			Painter.setPen( AdvancePen );
 			// Advance
-			Painter.drawLine( ( *FaceItr ).Rect.x( ),//Face->glyph->metrics.Advance / 64,
+			Painter.drawLine( ( *FaceItr ).Rect.x( ),
 				( *FaceItr ).Rect.height( )+10,
 				( *FaceItr ).Face->glyph->metrics.horiAdvance / 64,
 				( *FaceItr ).Rect.height( )+10 );
-				
+
+			if( ( *FaceItr ).Rect.height( ) > CurrentMaxHeight )
+			{
+				CurrentMaxHeight = ( *FaceItr ).Rect.height( );
+			}
+
+			Painter.translate( 
+				( *FaceItr ).Face->glyph->bitmap.width + m_Padding, 0 );
 		}
 	}
 }
