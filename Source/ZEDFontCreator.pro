@@ -27,7 +27,8 @@ TEMPLATE = app
 SOURCES +=\
 	Source/MainWindow.cpp \
     Source/Main.cpp \
-	Source/FontWidget.cpp
+	Source/FontWidget.cpp \
+	Source/Targa.cpp
 
 
 INCLUDEPATH += ./Headers /usr/include/freetype2
@@ -36,7 +37,8 @@ LIBS += -lfreetype
 
 HEADERS  +=\
 	Headers/MainWindow.h \
-	Headers/FontWidget.h
+	Headers/FontWidget.h \
+	Headers/Targa.h
 
 versioninfo.target = Headers/GitVersion.h
 versioninfo.commands = @mkdir -p Headers;\

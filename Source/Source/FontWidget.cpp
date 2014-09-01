@@ -1,6 +1,8 @@
 #include <FontWidget.h>
 #include <QPainter>
+#include <QImage>
 #include <QPen>
+#include <Targa.h>
 
 #define TRUNC(x) ((x) >> 6)
 
@@ -87,20 +89,22 @@ FontWidget::~FontWidget( )
 
 void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 {
-	printf( "Repainting\n" );
 	QWidget::paintEvent( p_pPaintEvent );
 
 	if( m_FTLibrary )
 	{
-		printf( "Painting char\n" );
 		FT_Error Error = FT_Err_Ok;
 
-		QPainter Painter( this );
+		m_SpriteFont = QImage( this->size( ), QImage::Format_ARGB32 );
+
+		QPainter Painter;
+
+		Painter.begin( &m_SpriteFont );
 
 		FontArray::const_iterator FaceItr = m_Faces.begin( );
 
 		Painter.fillRect( Painter.window( ),
-			QBrush( QColor( 0, 0, 0, 255 ) ) );
+			QBrush( QColor( 0, 0, 0, 0 ) ) );
 		QPen OutlinePen( QColor( 0, 255, 0, 255 ), 1 );
 		QPen BaseLinePen( QColor( 255, 0, 0, 255 ), 1 );
 		QPen AdvancePen( QColor( 0, 255, 255, 255 ), 1 );
@@ -121,7 +125,6 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 			if( CurrentXPosition > m_Width )
 			{
-				printf( "Reset\n" );
 				Painter.resetTransform( );
 				CurrentYPosition += CurrentMaxHeight;
 				Painter.translate( m_Padding, CurrentYPosition + m_Padding );
@@ -185,6 +188,19 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			Painter.translate( 
 				( *FaceItr ).Face->glyph->bitmap.width + m_Padding, 0 );
 		}
+
+		Painter.end( );
+
+		QPainter WidgetPainter( this );
+
+		QRect Source( 0.0f, 0.0f, this->width( ), this->height( ) );
+
+		WidgetPainter.fillRect( WidgetPainter.window( ),
+			QBrush( QColor( 0, 0, 0, 255 ) ) );
+
+		WidgetPainter.drawImage( Source, m_SpriteFont, Source );
+
+		WriteQImageToTarga( m_SpriteFont, "Sprite.tga" );
 	}
 }
 

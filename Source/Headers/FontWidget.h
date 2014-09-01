@@ -14,6 +14,8 @@ typedef struct __tagFONT_RENDER
 	QRect	Rect;
 }FONT_RENDER;
 
+class QImage;
+
 class FontWidget : public QWidget
 {
 	Q_OBJECT
@@ -32,6 +34,8 @@ private:
 	int		m_Padding;
 	int		m_Width;
 	int		m_Height;
+
+	QImage	m_SpriteFont;
 };
 
 #endif // __ZEETOOL_FONTCREATOR_FONTWIDGET_H__
