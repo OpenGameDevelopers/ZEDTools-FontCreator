@@ -96,6 +96,9 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 		FT_Error Error = FT_Err_Ok;
 
 		m_SpriteFont = QImage( this->size( ), QImage::Format_ARGB32 );
+		QPainter OverlayPainter;
+		QImage OverlayImage = QImage( this->size( ), QImage::Format_ARGB32 );
+		OverlayPainter.begin( &OverlayImage );
 
 		QPainter Painter;
 
@@ -114,6 +117,9 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 		int CurrentYPosition = 0;
 
 		Painter.translate( m_Padding, m_Padding );
+		OverlayPainter.fillRect( OverlayPainter.window( ),
+			QBrush( QColor( 0, 0, 0, 0 ) ) );
+		OverlayPainter.translate( m_Padding, m_Padding );
 
 		for( ; FaceItr != m_Faces.end( ); ++FaceItr )
 		{
@@ -126,8 +132,11 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			if( CurrentXPosition > m_Width )
 			{
 				Painter.resetTransform( );
+				OverlayPainter.resetTransform( );
 				CurrentYPosition += CurrentMaxHeight;
 				Painter.translate( m_Padding, CurrentYPosition + m_Padding );
+				OverlayPainter.translate( m_Padding,
+					CurrentYPosition + m_Padding );
 				CurrentXPosition = m_Padding +
 					( *FaceItr ).Face->glyph->bitmap.width;
 				CurrentMaxHeight = 0;
@@ -148,34 +157,34 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 			Painter.drawImage( QPoint( 0, 0 ), GlyphImage );
 
-			Painter.setPen( OutlinePen );
+			OverlayPainter.setPen( OutlinePen );
 			// Bottom line
-			Painter.drawLine( ( *FaceItr ).Rect.x( ),
+			OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
 				( *FaceItr ).Rect.height( ),
 				( *FaceItr ).Rect.width( ), ( *FaceItr ).Rect.height( ) );
 			// Top line
-			Painter.drawLine( ( *FaceItr ).Rect.x( ),
+			OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
 				( *FaceItr ).Rect.y( ), ( *FaceItr ).Rect.width( ),
 				( *FaceItr ).Rect.y( ) );
 			// Left line
-			Painter.drawLine( ( *FaceItr ).Rect.x( ),
+			OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
 				( *FaceItr ).Rect.y( ), ( *FaceItr ).Rect.x( ),
 				( *FaceItr ).Rect.height( ) );
 			// Right line
-			Painter.drawLine( ( *FaceItr ).Rect.width( ),
+			OverlayPainter.drawLine( ( *FaceItr ).Rect.width( ),
 				( *FaceItr ).Rect.y( ), ( *FaceItr ).Rect.width( ),
 				( *FaceItr ).Rect.height( ) );
 			
-			Painter.setPen( BaseLinePen );
+			OverlayPainter.setPen( BaseLinePen );
 			// Base line
-			Painter.drawLine( ( *FaceItr ).Rect.x( ),
+			OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
 				( *FaceItr ).Face->glyph->metrics.horiBearingY / 64,
 				( *FaceItr ).Rect.width( ),
 				( *FaceItr ).Face->glyph->metrics.horiBearingY / 64);
 
-			Painter.setPen( AdvancePen );
+			OverlayPainter.setPen( AdvancePen );
 			// Advance
-			Painter.drawLine( ( *FaceItr ).Rect.x( ),
+			OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
 				( *FaceItr ).Rect.height( )+10,
 				( *FaceItr ).Face->glyph->metrics.horiAdvance / 64,
 				( *FaceItr ).Rect.height( )+10 );
@@ -187,9 +196,12 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 			Painter.translate( 
 				( *FaceItr ).Face->glyph->bitmap.width + m_Padding, 0 );
+			OverlayPainter.translate( 
+				( *FaceItr ).Face->glyph->bitmap.width + m_Padding, 0 );
 		}
 
 		Painter.end( );
+		OverlayPainter.end( );
 
 		QPainter WidgetPainter( this );
 
@@ -199,6 +211,7 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			QBrush( QColor( 0, 0, 0, 255 ) ) );
 
 		WidgetPainter.drawImage( Source, m_SpriteFont, Source );
+		WidgetPainter.drawImage( Source, OverlayImage, Source );
 
 		WriteQImageToTarga( m_SpriteFont, "Sprite.tga" );
 	}
