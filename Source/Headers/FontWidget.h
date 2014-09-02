@@ -9,9 +9,9 @@
 
 typedef struct __tagFONT_RENDER
 {
-	int a;
 	FT_Face	Face;
 	QRect	Rect;
+	int		YOffset;
 }FONT_RENDER;
 
 class QImage;

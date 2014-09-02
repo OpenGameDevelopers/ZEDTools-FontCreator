@@ -104,7 +104,7 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 		Painter.begin( &m_SpriteFont );
 
-		FontArray::const_iterator FaceItr = m_Faces.begin( );
+		FontArray::iterator FaceItr = m_Faces.begin( );
 
 		Painter.fillRect( Painter.window( ),
 			QBrush( QColor( 0, 0, 0, 0 ) ) );
@@ -121,6 +121,13 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			QBrush( QColor( 0, 0, 0, 0 ) ) );
 		OverlayPainter.translate( m_Padding, m_Padding );
 
+		char GlyphChar = 'A';
+
+		FontArray::iterator BeginningItr = FaceItr;
+		std::vector< int > LineSpacing;
+		LineSpacing.push_back( 0 );
+		int MaxTop = 0;
+		int MaxBottom = 0;
 		for( ; FaceItr != m_Faces.end( ); ++FaceItr )
 		{
 			Error = FT_Render_Glyph( ( *FaceItr ).Face->glyph,
@@ -131,14 +138,119 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 			if( CurrentXPosition > m_Width )
 			{
-				Painter.resetTransform( );
-				OverlayPainter.resetTransform( );
-				CurrentYPosition += CurrentMaxHeight;
-				Painter.translate( m_Padding, CurrentYPosition + m_Padding );
-				OverlayPainter.translate( m_Padding,
-					CurrentYPosition + m_Padding );
+				FontArray::iterator EndItr = FaceItr;
 				CurrentXPosition = m_Padding +
 					( *FaceItr ).Face->glyph->bitmap.width;
+				printf( "Max Height: %d\n", CurrentMaxHeight );
+				for( ; BeginningItr != EndItr; ++BeginningItr )
+				{
+					CurrentMaxHeight = MaxTop + MaxBottom;
+					( *BeginningItr ).YOffset = CurrentMaxHeight -
+						( *BeginningItr ).Face->glyph->metrics.horiBearingY /
+							64;
+					printf( "Char: %c\n", GlyphChar++ );
+					printf( "Y Offset: %d\n", ( *BeginningItr ).YOffset );
+					printf( "Height: %d\n",
+						( *BeginningItr ).Face->glyph->bitmap.rows );
+					printf( "Bearing Y: %d\n",
+						( *BeginningItr ).Face->glyph->metrics.horiBearingY /
+							64 );
+					printf( "Max top: %d\n", MaxTop );
+					printf( "Max bottom: %d\n", MaxBottom );
+					printf( "Current max height: %d\n", CurrentMaxHeight );
+				}
+
+				printf( "Line spacing: %d\n", MaxBottom );
+				LineSpacing.push_back( MaxBottom );
+				MaxTop = 0;
+				MaxBottom = 0;
+				CurrentMaxHeight = 0;
+				if( EndItr != m_Faces.end( ) )
+				{
+					BeginningItr = EndItr;
+				}
+			}
+
+			int Top = ( *FaceItr ).Face->glyph->metrics.horiBearingY / 64;
+			int Bottom = 0;
+			if( ( ( *FaceItr ).Face->glyph->metrics.horiBearingY / 64 ) > 0 )
+			{
+				Bottom = ( *FaceItr ).Face->glyph->bitmap.rows -
+					( ( *FaceItr ).Face->glyph->metrics.horiBearingY / 64 );
+			}
+
+			if( Top > MaxTop )
+			{
+				MaxTop = Top;
+			}
+			if( Bottom > MaxBottom )
+			{
+				MaxBottom = Bottom;
+			}
+		}
+
+		// Process the last row
+		if( BeginningItr != m_Faces.end( ) )
+		{
+			CurrentMaxHeight = MaxTop + MaxBottom;
+			printf( "Max Height: %d\n", CurrentMaxHeight );
+			for( ; BeginningItr != m_Faces.end( ); ++BeginningItr )
+			{
+				( *BeginningItr ).YOffset = CurrentMaxHeight -
+					( *BeginningItr ).Face->glyph->metrics.horiBearingY / 64;
+				printf( "Char: %c\n", GlyphChar++ );
+				printf( "Y Offset: %d\n", ( *BeginningItr ).YOffset );
+				printf( "Row count: %d\n",
+					( *BeginningItr ).Face->glyph->bitmap.rows );
+				printf( "BearingY: %d\n",
+					( *BeginningItr ).Face->glyph->metrics.horiBearingY / 64 );
+			}
+
+			printf( "Line spacing: %d\n", MaxBottom );
+			LineSpacing.push_back( MaxBottom );
+		}
+
+		CurrentMaxHeight = 0;
+		CurrentXPosition = m_Padding;
+		CurrentYPosition = m_Padding;
+
+		FaceItr = m_Faces.begin( );
+
+		std::vector< int >::const_iterator LineSpace = LineSpacing.begin( );
+
+		printf( "Line spacing count: %d\n", LineSpacing.size( ) );
+
+		for( ; FaceItr != m_Faces.end( ); ++FaceItr )
+		{
+			Error = FT_Render_Glyph( ( *FaceItr ).Face->glyph,
+				FT_RENDER_MODE_NORMAL );
+
+			CurrentXPosition += ( ( *FaceItr ).Face->glyph->bitmap.width ) +
+				m_Padding;
+
+			if( CurrentXPosition > m_Width )
+			{
+				printf( "Current line spacing: %d\n", ( *LineSpace ) );
+				++LineSpace;
+				printf( "New line spacing: %d\n", ( *LineSpace ) );
+				Painter.resetTransform( );
+				OverlayPainter.resetTransform( );
+				CurrentMaxHeight = MaxTop + MaxBottom;
+				CurrentYPosition += CurrentMaxHeight;
+				Painter.translate( m_Padding, CurrentYPosition + m_Padding +
+					( *LineSpace ) );
+				OverlayPainter.translate( m_Padding,
+					CurrentYPosition + m_Padding + ( *LineSpace ) );
+				CurrentXPosition = m_Padding +
+					( *FaceItr ).Face->glyph->bitmap.width;
+
+				printf( "Position:             %d\n", CurrentYPosition +
+					m_Padding + ( *LineSpace ) );
+				printf( "Current Position:     %d\n", CurrentYPosition );
+				printf( "Current Padding:      %d\n", m_Padding );
+				printf( "Current Line Spacing: %d\n", ( *LineSpace ) );
+				printf( "Current max height:   %d\n", CurrentMaxHeight );
+
 				CurrentMaxHeight = 0;
 			}
 
@@ -155,11 +267,14 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			}
 			GlyphImage.setColorTable( ColourTable );
 
+			Painter.translate( 0, ( *FaceItr ).YOffset );
+			OverlayPainter.translate( 0, ( *FaceItr ).YOffset );
+
 			Painter.drawImage( QPoint( 0, 0 ), GlyphImage );
 
 			OverlayPainter.setPen( OutlinePen );
 			// Bottom line
-			OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
+			/*OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
 				( *FaceItr ).Rect.height( ),
 				( *FaceItr ).Rect.width( ), ( *FaceItr ).Rect.height( ) );
 			// Top line
@@ -173,7 +288,7 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			// Right line
 			OverlayPainter.drawLine( ( *FaceItr ).Rect.width( ),
 				( *FaceItr ).Rect.y( ), ( *FaceItr ).Rect.width( ),
-				( *FaceItr ).Rect.height( ) );
+				( *FaceItr ).Rect.height( ) );*/
 			
 			OverlayPainter.setPen( BaseLinePen );
 			// Base line
@@ -184,20 +299,31 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 			OverlayPainter.setPen( AdvancePen );
 			// Advance
-			OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
+			/*OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
 				( *FaceItr ).Rect.height( )+10,
 				( *FaceItr ).Face->glyph->metrics.horiAdvance / 64,
-				( *FaceItr ).Rect.height( )+10 );
+				( *FaceItr ).Rect.height( )+10 );*/
 
-			if( ( *FaceItr ).Rect.height( ) > CurrentMaxHeight )
+
+			int Top = ( *FaceItr ).Face->glyph->metrics.horiBearingY / 64;
+			int Bottom = ( *FaceItr ).Face->glyph->bitmap.rows -
+				( ( *FaceItr ).Face->glyph->metrics.horiBearingY / 64 );
+
+			if( Top > MaxTop )
 			{
-				CurrentMaxHeight = ( *FaceItr ).Rect.height( );
+				MaxTop = Top;
+			}
+			if( Bottom > MaxBottom )
+			{
+				MaxBottom = Bottom;
 			}
 
 			Painter.translate( 
-				( *FaceItr ).Face->glyph->bitmap.width + m_Padding, 0 );
+				( *FaceItr ).Face->glyph->bitmap.width + m_Padding,
+				-( *FaceItr ).YOffset );
 			OverlayPainter.translate( 
-				( *FaceItr ).Face->glyph->bitmap.width + m_Padding, 0 );
+				( *FaceItr ).Face->glyph->bitmap.width + m_Padding,
+				-( *FaceItr ).YOffset );
 		}
 
 		Painter.end( );

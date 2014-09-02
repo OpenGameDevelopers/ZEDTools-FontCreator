@@ -7,7 +7,8 @@
 #include <QFileDialog>
 #include <FontWidget.h>
 
-MainWindow::MainWindow( )
+MainWindow::MainWindow( ) :
+	m_pFontWidget( nullptr )
 {
 }
 
@@ -59,6 +60,11 @@ void MainWindow::OpenFontFile( )
 		tr( "" ), tr( "Font Files (*.ttf)" ) );
 	printf( "%s\n", m_FontFile.toUtf8( ).constData( ) );
 	fflush( stdout );
+	if( m_pFontWidget )
+	{
+		delete m_pFontWidget;
+		m_pFontWidget = nullptr;
+	}
 	m_pFontWidget = new FontWidget( m_FontFile, 256, 256 );
 	setCentralWidget( m_pFontWidget );
 }
