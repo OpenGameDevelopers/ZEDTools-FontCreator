@@ -141,10 +141,13 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 				FontArray::iterator EndItr = FaceItr;
 				CurrentXPosition = m_Padding +
 					( *FaceItr ).Face->glyph->bitmap.width;
+
+				// THERE'S SOMETHING WRONG HERE, FOR SEGA SATURN'S '_', IT
+				// SHOULD BE 32, BUT IT'S 27 FOR THE MAX HEIGHT
+				CurrentMaxHeight = MaxTop + MaxBottom;
 				printf( "Max Height: %d\n", CurrentMaxHeight );
 				for( ; BeginningItr != EndItr; ++BeginningItr )
 				{
-					CurrentMaxHeight = MaxTop + MaxBottom;
 					( *BeginningItr ).YOffset = CurrentMaxHeight -
 						( *BeginningItr ).Face->glyph->metrics.horiBearingY /
 							64;
@@ -164,7 +167,6 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 				LineSpacing.push_back( MaxBottom );
 				MaxTop = 0;
 				MaxBottom = 0;
-				CurrentMaxHeight = 0;
 				if( EndItr != m_Faces.end( ) )
 				{
 					BeginningItr = EndItr;
@@ -177,6 +179,13 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			{
 				Bottom = ( *FaceItr ).Face->glyph->bitmap.rows -
 					( ( *FaceItr ).Face->glyph->metrics.horiBearingY / 64 );
+			}
+
+			if( ( ( *FaceItr ).Face->glyph->metrics.horiBearingY / 64 ) == 0 )
+			{
+				Bottom = ( *FaceItr ).Face->glyph->bitmap.rows;
+
+				printf( "BOTTOM: \t\t\t\t\t%d\n", Bottom );
 			}
 
 			if( Top > MaxTop )
@@ -210,7 +219,6 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			LineSpacing.push_back( MaxBottom );
 		}
 
-		CurrentMaxHeight = 0;
 		CurrentXPosition = m_Padding;
 		CurrentYPosition = m_Padding;
 
@@ -251,7 +259,6 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 				printf( "Current Line Spacing: %d\n", ( *LineSpace ) );
 				printf( "Current max height:   %d\n", CurrentMaxHeight );
 
-				CurrentMaxHeight = 0;
 			}
 
 			QImage GlyphImage( ( *FaceItr ).Face->glyph->bitmap.buffer,
@@ -274,21 +281,19 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 			OverlayPainter.setPen( OutlinePen );
 			// Bottom line
-			/*OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
-				( *FaceItr ).Rect.height( ),
-				( *FaceItr ).Rect.width( ), ( *FaceItr ).Rect.height( ) );
+			OverlayPainter.drawLine( 0, ( *FaceItr ).Face->glyph->bitmap.rows,
+				( *FaceItr ).Face->glyph->bitmap.width,
+				( *FaceItr ).Face->glyph->bitmap.rows );
 			// Top line
-			OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
-				( *FaceItr ).Rect.y( ), ( *FaceItr ).Rect.width( ),
-				( *FaceItr ).Rect.y( ) );
+			OverlayPainter.drawLine( 0, 0,
+				( *FaceItr ).Face->glyph->bitmap.width, 0 );
 			// Left line
-			OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
-				( *FaceItr ).Rect.y( ), ( *FaceItr ).Rect.x( ),
-				( *FaceItr ).Rect.height( ) );
+			OverlayPainter.drawLine( 0, 0, 0,
+				( *FaceItr ).Face->glyph->bitmap.rows );
 			// Right line
-			OverlayPainter.drawLine( ( *FaceItr ).Rect.width( ),
-				( *FaceItr ).Rect.y( ), ( *FaceItr ).Rect.width( ),
-				( *FaceItr ).Rect.height( ) );*/
+			OverlayPainter.drawLine( ( *FaceItr ).Face->glyph->bitmap.width, 0,
+				( *FaceItr ).Face->glyph->bitmap.width,
+				( *FaceItr ).Face->glyph->bitmap.rows );
 			
 			OverlayPainter.setPen( BaseLinePen );
 			// Base line
@@ -299,10 +304,10 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 			OverlayPainter.setPen( AdvancePen );
 			// Advance
-			/*OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
-				( *FaceItr ).Rect.height( )+10,
+			OverlayPainter.drawLine( 0,
+				( *FaceItr ).Rect.height( ),
 				( *FaceItr ).Face->glyph->metrics.horiAdvance / 64,
-				( *FaceItr ).Rect.height( )+10 );*/
+				( *FaceItr ).Rect.height( ) );
 
 
 			int Top = ( *FaceItr ).Face->glyph->metrics.horiBearingY / 64;
