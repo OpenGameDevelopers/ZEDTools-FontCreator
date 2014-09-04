@@ -7,7 +7,7 @@
 #define TRUNC(x) ((x) >> 6)
 
 FontWidget::FontWidget( QString &p_FontFile, const int p_Width,
-	const int p_Height, QWidget *p_pParent )
+	const int p_Height, const int p_FontSize, QWidget *p_pParent )
 {
 	setMinimumSize( p_Width, p_Height );
 	setMaximumSize( p_Width, p_Height );
@@ -25,7 +25,7 @@ FontWidget::FontWidget( QString &p_FontFile, const int p_Width,
 
 	if( !Error )
 	{
-		for( int i = 0; i < 26+6+26; ++i )
+		for( int i = 0; i < 26+6+26+17; ++i )
 		{
 			FONT_RENDER FontRender;
 			Error = FT_New_Face( m_FTLibrary,
@@ -33,14 +33,14 @@ FontWidget::FontWidget( QString &p_FontFile, const int p_Width,
 
 			if( !Error )
 			{
-				Error = FT_Set_Char_Size( FontRender.Face, 0, 24*64,
+				Error = FT_Set_Char_Size( FontRender.Face, 0, p_FontSize * 64,
 					physicalDpiX( ), physicalDpiY( ) );
 
 				if( !Error )
 				{
 
 					FT_UInt16 GlyphIndex = 0;
-					GlyphIndex = FT_Get_Char_Index( FontRender.Face, 'A'+i );
+					GlyphIndex = FT_Get_Char_Index( FontRender.Face, '0'+i );
 
 					Error = FT_Load_Glyph( FontRender.Face, GlyphIndex,
 						FT_LOAD_DEFAULT );
@@ -62,7 +62,7 @@ FontWidget::FontWidget( QString &p_FontFile, const int p_Width,
 							QSize( TRUNC( Right - Left ) + 1,
 							TRUNC( Top - Bottom ) + 1 ) );
 
-						printf( "Adding %c\n", 'A'+i );
+						printf( "Adding %c\n", '0'+i );
 
 						FontRender.Rect = Rect;
 
@@ -121,7 +121,7 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			QBrush( QColor( 0, 0, 0, 0 ) ) );
 		OverlayPainter.translate( m_Padding, m_Padding );
 
-		char GlyphChar = 'A';
+		char GlyphChar = '0';
 
 		FontArray::iterator BeginningItr = FaceItr;
 		std::vector< int > LineSpacing;
@@ -142,15 +142,16 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 				CurrentXPosition = m_Padding +
 					( *FaceItr ).Face->glyph->bitmap.width;
 
-				// THERE'S SOMETHING WRONG HERE, FOR SEGA SATURN'S '_', IT
-				// SHOULD BE 32, BUT IT'S 27 FOR THE MAX HEIGHT
+				// A problem still exists when rendering characters that only
+				// go below the baseline, the Y offset ignores it when
+				// rendering
 				CurrentMaxHeight = MaxTop + MaxBottom;
 				printf( "Max Height: %d\n", CurrentMaxHeight );
 				for( ; BeginningItr != EndItr; ++BeginningItr )
 				{
 					( *BeginningItr ).YOffset = CurrentMaxHeight -
-						( *BeginningItr ).Face->glyph->metrics.horiBearingY /
-							64;
+						( ( *BeginningItr ).Face->glyph->metrics.horiBearingY /
+							64 );
 					printf( "Char: %c\n", GlyphChar++ );
 					printf( "Y Offset: %d\n", ( *BeginningItr ).YOffset );
 					printf( "Height: %d\n",
@@ -196,6 +197,8 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			{
 				MaxBottom = Bottom;
 			}
+
+			( *FaceItr ).Overhang = Bottom;
 		}
 
 		// Process the last row
@@ -219,12 +222,13 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			LineSpacing.push_back( MaxBottom );
 		}
 
+		std::vector< int >::const_iterator LineSpace = LineSpacing.begin( );
 		CurrentXPosition = m_Padding;
-		CurrentYPosition = m_Padding;
+		CurrentYPosition = m_Padding + ( *LineSpace );
 
 		FaceItr = m_Faces.begin( );
 
-		std::vector< int >::const_iterator LineSpace = LineSpacing.begin( );
+		int GlyphCounter = 0;
 
 		printf( "Line spacing count: %d\n", LineSpacing.size( ) );
 
@@ -232,6 +236,20 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 		{
 			Error = FT_Render_Glyph( ( *FaceItr ).Face->glyph,
 				FT_RENDER_MODE_NORMAL );
+
+
+			FONTFILE_GLYPH FileGlyph;
+			FileGlyph.Character = '0' + GlyphCounter;
+			FileGlyph.X = CurrentXPosition;
+			FileGlyph.Y = CurrentYPosition + ( *LineSpace ) + ( *FaceItr ).YOffset - 1;
+			FileGlyph.Width = ( *FaceItr ).Face->glyph->bitmap.width;
+			FileGlyph.Height = ( *FaceItr ).Face->glyph->bitmap.rows;
+			FileGlyph.BearingY = ( *FaceItr ).Overhang;
+			if( CurrentYPosition != ( m_Padding + ( *LineSpace ) ) )
+			{
+				FileGlyph.X += m_Padding;
+				FileGlyph.Y += m_Padding;
+			}
 
 			CurrentXPosition += ( ( *FaceItr ).Face->glyph->bitmap.width ) +
 				m_Padding;
@@ -259,7 +277,12 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 				printf( "Current Line Spacing: %d\n", ( *LineSpace ) );
 				printf( "Current max height:   %d\n", CurrentMaxHeight );
 
+				FileGlyph.X = m_Padding;
+				FileGlyph.Y = CurrentYPosition + m_Padding + ( *LineSpace ) + ( *FaceItr ).YOffset;
 			}
+
+
+			m_GlyphArray.push_back( FileGlyph );
 
 			QImage GlyphImage( ( *FaceItr ).Face->glyph->bitmap.buffer,
 				( *FaceItr ).Face->glyph->bitmap.width,
@@ -329,6 +352,7 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			OverlayPainter.translate( 
 				( *FaceItr ).Face->glyph->bitmap.width + m_Padding,
 				-( *FaceItr ).YOffset );
+			++GlyphCounter;
 		}
 
 		Painter.end( );
@@ -345,6 +369,25 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 		WidgetPainter.drawImage( Source, OverlayImage, Source );
 
 		WriteQImageToTarga( m_SpriteFont, "Sprite.tga" );
+
+		this->WriteGlyphArray( );
 	}
+}
+
+
+void FontWidget::WriteGlyphArray( )
+{
+	GlyphArray::const_iterator GlyphItr = m_GlyphArray.begin( );
+
+	FILE *pGlyphFile = fopen( "Glyphs.glyph", "w" );
+
+	for( ; GlyphItr != m_GlyphArray.end( ); ++GlyphItr )
+	{
+		FONTFILE_GLYPH Glyph = ( *GlyphItr );
+		fprintf( pGlyphFile, "%c %d %d %d %d %d\n", Glyph.Character,
+			Glyph.X, Glyph.Y, Glyph.Width, Glyph.Height, Glyph.BearingY );
+	}
+
+	fclose( pGlyphFile );
 }
 
