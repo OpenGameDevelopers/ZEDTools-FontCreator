@@ -20,6 +20,7 @@ int MainWindow::Initialise( )
 {
 	this->CreateActions( );
 	this->CreateMenus( );
+	this->CreateWidgets( );
 
 	char Title[ 1000 ];
 	memset( Title, '\0', sizeof( Title ) );
@@ -33,6 +34,26 @@ int MainWindow::Initialise( )
 		);
 	setWindowTitle( tr( Title ) );
 	setMinimumSize( 640, 480 );
+
+	if( m_pFontWidget->Initialise( ) == 0 )
+	{
+		m_pFontWidget->SetDimensions( 256, 256 );
+		m_pFontWidget->SetPointSize( 20 );
+		m_pFontWidget->SetPadding( 3 );
+
+		QString Glyphs;
+
+		for( int i = 0; i < 26+6+26+17; ++i )
+		{
+			Glyphs[ i ] = '0'+i;
+		}
+
+		Glyphs[ 26+6+26+17 ] = '\0';
+
+		m_pFontWidget->CreateGlyphs( Glyphs );
+	}
+
+	setCentralWidget( m_pFontWidget );
 
 	return 0;
 }
@@ -54,18 +75,17 @@ void MainWindow::CreateMenus( )
 	m_pFileMenu->addAction( m_pQuitAction );
 }
 
+void MainWindow::CreateWidgets( )
+{
+	m_pFontWidget = new FontWidget( );
+}
+
 void MainWindow::OpenFontFile( )
 {
 	m_FontFile = QFileDialog::getOpenFileName( this, tr( "Open Font File" ),
 		tr( "" ), tr( "Font Files (*.ttf)" ) );
-	printf( "%s\n", m_FontFile.toUtf8( ).constData( ) );
-	fflush( stdout );
-	if( m_pFontWidget )
-	{
-		delete m_pFontWidget;
-		m_pFontWidget = nullptr;
-	}
-	m_pFontWidget = new FontWidget( m_FontFile, 256, 256 );
-	setCentralWidget( m_pFontWidget );
+	
+	m_pFontWidget->SetFont( m_FontFile );
+	//m_pFontWidget = new FontWidget( m_FontFile, 256, 256 );
 }
 

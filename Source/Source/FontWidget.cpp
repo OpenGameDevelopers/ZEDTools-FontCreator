@@ -6,85 +6,169 @@
 
 #define TRUNC(x) ((x) >> 6)
 
+FontWidget::FontWidget( ) :
+	m_Padding( 0 ),
+	m_Width( 128 ),
+	m_Height( 128 ),
+	m_PointSize( 16 )
+{
+	setMinimumSize( m_Width, m_Height );
+	setMaximumSize( m_Width, m_Height );
+	m_FontFile.clear( );
+}
+
 FontWidget::FontWidget( QString &p_FontFile, const int p_Width,
-	const int p_Height, const int p_FontSize, QWidget *p_pParent )
+	const int p_Height, const int p_FontSize, QWidget *p_pParent ) :
+	m_Padding( 0 )
 {
 	setMinimumSize( p_Width, p_Height );
 	setMaximumSize( p_Width, p_Height );
 
 	m_Width = p_Width;
 	m_Height = p_Height;
+}
 
-	m_Padding = 3;
+FontWidget::~FontWidget( )
+{
+	if( m_FTLibrary )
+	{
+		FontArray::const_iterator FaceItr = m_Faces.begin( );
 
+		while( FaceItr != m_Faces.end( ) )
+		{
+			FT_Done_Face( ( *FaceItr ).Face );
+			++FaceItr;
+		}
+
+		FT_Done_FreeType( m_FTLibrary );
+	}
+}
+
+int FontWidget::Initialise( )
+{
 	FT_Error Error = FT_Err_Ok;
-
 	m_FTLibrary = 0;
 
-	Error  = FT_Init_FreeType( &m_FTLibrary );
+	Error = FT_Init_FreeType( &m_FTLibrary );
+
+	printf( "Error: %p\n", m_FTLibrary );
 
 	if( !Error )
 	{
-		for( int i = 0; i < 26+6+26+17; ++i )
+		return 0;
+	}
+
+	return 1;
+}
+
+void FontWidget::SetDimensions( const int p_Width, const int p_Height )
+{
+	setMinimumSize( p_Width, p_Height );
+	setMaximumSize( p_Width, p_Height );
+
+	printf( "Width: %d\nHeight: %d\n", p_Width, p_Height );
+}
+
+void FontWidget::SetPointSize( const int p_PointSize )
+{
+	m_PointSize = p_PointSize;
+
+	this->RegenerateGlyphs( );
+}
+
+void FontWidget::SetFont( const QString &p_FontFile )
+{
+	m_FontFile = p_FontFile;
+
+	printf( "Setting font\n" );
+
+	this->RegenerateGlyphs( );
+}
+
+void FontWidget::SetPadding( const int p_Padding )
+{
+	m_Padding = p_Padding;
+
+	this->RegenerateGlyphs( );
+}
+
+void FontWidget::CreateGlyphs( const QString &p_Characters )
+{
+	m_Characters = p_Characters;
+
+	this->RegenerateGlyphs( );
+}
+
+void FontWidget::RegenerateGlyphs( )
+{
+	printf( "Regen\n" );
+	printf( "Lib: %p %d\n", m_FTLibrary, m_FTLibrary );
+	if( m_FTLibrary )
+	{
+
+		printf( "Creating\n" );
+		FontArray::const_iterator FaceItr = m_Faces.begin( );
+		while( FaceItr != m_Faces.end( ) )
 		{
+			printf( "deleting\n" );
+			FT_Done_Face( ( *FaceItr ).Face );
+			++FaceItr;
+		}
+
+		QChar *Character = m_Characters.data( );
+
+		while( !Character->isNull( ) )
+		{
+			printf( "Not null: %c\n", Character->toLatin1( ) );
 			FONT_RENDER FontRender;
-			Error = FT_New_Face( m_FTLibrary,
-				p_FontFile.toUtf8( ).constData( ), 0, &FontRender.Face );
+			FT_Error Error = FT_New_Face( m_FTLibrary,
+				m_FontFile.toUtf8( ).constData( ), 0, &FontRender.Face );
 
 			if( !Error )
 			{
-				Error = FT_Set_Char_Size( FontRender.Face, 0, p_FontSize * 64,
+				printf( "OK\n" );
+				Error = FT_Set_Char_Size( FontRender.Face, 0, m_PointSize * 64,
 					physicalDpiX( ), physicalDpiY( ) );
 
 				if( !Error )
 				{
-
+					printf( "Rendering glyph\n" );
 					FT_UInt16 GlyphIndex = 0;
-					GlyphIndex = FT_Get_Char_Index( FontRender.Face, '0'+i );
+					GlyphIndex = FT_Get_Char_Index( FontRender.Face,
+						Character->toLatin1( ) );
 
 					Error = FT_Load_Glyph( FontRender.Face, GlyphIndex,
 						FT_LOAD_DEFAULT );
 
 					if( !Error )
 					{
-						QRect Rect;
+						printf( "Adding to array\n" );
 						FT_Pos Left =
 							FontRender.Face->glyph->metrics.horiBearingX;
-						FT_Pos Right = Left +
+						FT_Pos Right =
 							FontRender.Face->glyph->metrics.width;
 						FT_Pos Top =
 							FontRender.Face->glyph->metrics.horiBearingY;
-						FT_Pos Bottom = Top -
+						FT_Pos Bottom =
 							FontRender.Face->glyph->metrics.height;
 
-						Rect = QRect( QPoint( TRUNC( Left ),
-							-TRUNC( Top ) + 1 ),
+						FontRender.Rect = QRect(
+							QPoint( TRUNC( Left ), -TRUNC( Top ) + 1 ),
 							QSize( TRUNC( Right - Left ) + 1,
-							TRUNC( Top - Bottom ) + 1 ) );
-
-						printf( "Adding %c\n", '0'+i );
-
-						FontRender.Rect = Rect;
+								TRUNC( Top - Bottom ) + 1 ) );
 
 						m_Faces.push_back( FontRender );
+
+						printf( "Rendered: %c\n", Character->toLatin1( ) );
 					}
 				}
 			}
+
+			++Character;
 		}
 	}
-}
 
-FontWidget::~FontWidget( )
-{
-	FontArray::const_iterator FaceItr = m_Faces.begin( );
-
-	while( FaceItr != m_Faces.end( ) )
-	{
-		FT_Done_Face( ( *FaceItr ).Face );
-		++FaceItr;
-	}
-
-	FT_Done_FreeType( m_FTLibrary );
+	this->update( );
 }
 
 void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
@@ -94,6 +178,8 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 	if( m_FTLibrary )
 	{
 		FT_Error Error = FT_Err_Ok;
+
+		QImage	m_SpriteFont;
 
 		m_SpriteFont = QImage( this->size( ), QImage::Format_ARGB32 );
 		QPainter OverlayPainter;
@@ -231,6 +317,7 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 		int GlyphCounter = 0;
 
 		printf( "Line spacing count: %d\n", LineSpacing.size( ) );
+		printf( "Size: %d\n", m_Faces.size( ) );
 
 		for( ; FaceItr != m_Faces.end( ); ++FaceItr )
 		{
@@ -367,10 +454,12 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 		WidgetPainter.drawImage( Source, m_SpriteFont, Source );
 		WidgetPainter.drawImage( Source, OverlayImage, Source );
-
+		/*
 		WriteQImageToTarga( m_SpriteFont, "Sprite.tga" );
 
-		this->WriteGlyphArray( );
+		this->WriteGlyphArray( );*/
+
+		printf( "Redraw\n" );
 	}
 }
 

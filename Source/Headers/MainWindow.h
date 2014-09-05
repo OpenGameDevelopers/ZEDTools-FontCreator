@@ -17,7 +17,8 @@ public:
 
 private:
 	void CreateActions( );
-	void CreateMenus();
+	void CreateMenus( );
+	void CreateWidgets( );
 
 	QMenu	*m_pFileMenu;
 	QAction	*m_pQuitAction;

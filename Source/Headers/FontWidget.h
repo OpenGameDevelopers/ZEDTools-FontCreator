@@ -65,15 +65,27 @@ class FontWidget : public QWidget
 {
 	Q_OBJECT
 public:
+	FontWidget( );
 	FontWidget( QString &p_FontFile, const int p_Width, const int p_Height,
 		const int p_FontSize = 16, QWidget *p_pParent = 0 );
 	~FontWidget( );
+
+	int Initialise( );
+
+	void SetDimensions( const int p_Width, const int p_Height );
+	void SetPointSize( const int p_PointSize );
+	void SetFont( const QString &p_FontFile );
+	void SetPadding( const int p_Padding );
+
+	void CreateGlyphs( const QString &p_Characters );
 
 private:
 	typedef std::vector< FONT_RENDER > FontArray;
 	typedef std::vector< FONTFILE_GLYPH > GlyphArray;
 	void paintEvent( QPaintEvent *p_pPaintEvent );
 	void WriteGlyphArray( );
+
+	void RegenerateGlyphs( );
 
 	FT_Library		m_FTLibrary;
 	FontArray		m_Faces;
@@ -82,8 +94,11 @@ private:
 	int		m_Padding;
 	int		m_Width;
 	int		m_Height;
+	int		m_PointSize;
 
-	QImage	m_SpriteFont;
+	QString	m_FontFile;
+	QString	m_Characters;
+
 };
 
 #endif // __ZEETOOL_FONTCREATOR_FONTWIDGET_H__
