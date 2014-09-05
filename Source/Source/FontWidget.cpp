@@ -14,7 +14,7 @@ FontWidget::FontWidget( ) :
 {
 	setMinimumSize( m_Width, m_Height );
 	setMaximumSize( m_Width, m_Height );
-	m_FontFile.clear( );
+	m_FontFileName.clear( );
 }
 
 FontWidget::FontWidget( QString &p_FontFile, const int p_Width,
@@ -78,7 +78,7 @@ void FontWidget::SetPointSize( const int p_PointSize )
 
 void FontWidget::SetFont( const QString &p_FontFile )
 {
-	m_FontFile = p_FontFile;
+	m_FontFileName = p_FontFile;
 
 	printf( "Setting font\n" );
 
@@ -122,7 +122,7 @@ void FontWidget::RegenerateGlyphs( )
 			printf( "Not null: %c\n", Character->toLatin1( ) );
 			FONT_RENDER FontRender;
 			FT_Error Error = FT_New_Face( m_FTLibrary,
-				m_FontFile.toUtf8( ).constData( ), 0, &FontRender.Face );
+				m_FontFileName.toUtf8( ).constData( ), 0, &FontRender.Face );
 
 			if( !Error )
 			{
@@ -171,6 +171,11 @@ void FontWidget::RegenerateGlyphs( )
 	this->update( );
 }
 
+FontFile FontWidget::GetFontFile( ) const
+{
+	return m_FontFile;
+}
+
 void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 {
 	QWidget::paintEvent( p_pPaintEvent );
@@ -214,8 +219,12 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 		LineSpacing.push_back( 0 );
 		int MaxTop = 0;
 		int MaxBottom = 0;
+
+
 		for( ; FaceItr != m_Faces.end( ); ++FaceItr )
 		{
+			m_FontFile.ClearGlyphs( );
+			m_FontFile.ClearTarga( );
 			Error = FT_Render_Glyph( ( *FaceItr ).Face->glyph,
 				FT_RENDER_MODE_NORMAL );
 
@@ -371,6 +380,8 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 			m_GlyphArray.push_back( FileGlyph );
 
+			m_FontFile.AddGlyph( FileGlyph );
+
 			QImage GlyphImage( ( *FaceItr ).Face->glyph->bitmap.buffer,
 				( *FaceItr ).Face->glyph->bitmap.width,
 				( *FaceItr ).Face->glyph->bitmap.rows,
@@ -454,10 +465,9 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 		WidgetPainter.drawImage( Source, m_SpriteFont, Source );
 		WidgetPainter.drawImage( Source, OverlayImage, Source );
-		/*
-		WriteQImageToTarga( m_SpriteFont, "Sprite.tga" );
 
-		this->WriteGlyphArray( );*/
+		
+		m_FontFile.SetQImage( m_SpriteFont );
 
 		printf( "Redraw\n" );
 	}

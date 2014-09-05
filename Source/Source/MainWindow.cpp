@@ -6,6 +6,7 @@
 #include <QVBoxLayout>
 #include <QFileDialog>
 #include <FontWidget.h>
+#include <FontFile.h>
 
 MainWindow::MainWindow( ) :
 	m_pFontWidget( nullptr )
@@ -61,10 +62,14 @@ int MainWindow::Initialise( )
 void MainWindow::CreateActions( )
 {
 	m_pOpenFontFile = new QAction( tr( "&Select Font" ), this );
+	m_pWriteFont = new QAction( tr( "&Write Font" ), this );
 	m_pQuitAction = new QAction( tr( "&Quit" ), this );
 	m_pQuitAction->setShortcuts( QKeySequence::Quit );
 
-	connect( m_pOpenFontFile, SIGNAL( triggered( ) ), this, SLOT( OpenFontFile( ) ) );
+	connect( m_pOpenFontFile, SIGNAL( triggered( ) ), this,
+		SLOT( OpenFontFile( ) ) );
+	connect( m_pWriteFont, SIGNAL( triggered( ) ), this,
+		SLOT( WriteFontFile( ) ) );
 	connect( m_pQuitAction, SIGNAL( triggered( ) ), this, SLOT( close( ) ) );
 }
 
@@ -72,6 +77,7 @@ void MainWindow::CreateMenus( )
 {
 	m_pFileMenu = menuBar( )->addMenu( tr( "&File" ) );
 	m_pFileMenu->addAction( m_pOpenFontFile );
+	m_pFileMenu->addAction( m_pWriteFont );
 	m_pFileMenu->addAction( m_pQuitAction );
 }
 
@@ -87,5 +93,17 @@ void MainWindow::OpenFontFile( )
 	
 	m_pFontWidget->SetFont( m_FontFile );
 	//m_pFontWidget = new FontWidget( m_FontFile, 256, 256 );
+}
+
+void MainWindow::WriteFontFile( )
+{
+	QString FileName = QFileDialog::getSaveFileName( this, tr( "Save font" ),
+		tr( "" ), tr( "ZED Font File (*.zed)" ) );
+	
+	// Check if the .zed extension has been applied
+
+	printf( "%s\n", FileName.toUtf8( ).constData( ) );
+
+	m_pFontWidget->GetFontFile( ).Write( FileName.toUtf8( ).constData( ) );
 }
 

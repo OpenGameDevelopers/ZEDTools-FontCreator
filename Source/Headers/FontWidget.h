@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <vector>
+#include <FontFile.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
@@ -15,49 +16,6 @@ typedef struct __tagFONT_RENDER
 	int		Overhang;
 }FONT_RENDER;
 
-typedef enum __tagFONT_TYPE
-{
-	BITMAP_FONT = 1,
-	VECTOR_FONT,
-	SIGNED_DISTANCE_FONT
-}FONT_TYPE;
-
-typedef enum __tagFONT_BACKGROUNDMODE
-{
-	COLOURKEY_BACKGROUND = 1,
-	SOLID_BACKGROUND,
-	TRANSPARENT_BACKGROUND,
-	TRANSLUCENT_BACKGROUND
-}FONT_BACKGROUNDMODE;
-
-#pragma pack( 1 )
-typedef struct __tagCOLOURKEY
-{
-	float	Red;
-	float	Green;
-	float	Blue;
-	float	Alpha;
-}COLOURKEY;
-
-typedef struct __tagFONTFILE_HEADER
-{
-	char				ID[ 4 ];
-	FONT_TYPE			Type;
-	FONT_BACKGROUNDMODE	BackgroundMode;
-	COLOURKEY			ColourKey;
-
-}FONTFILE_HEADER;
-
-typedef struct __tagFONTFILE_GLYPH
-{
-	char	Character;
-	uint32_t	X;
-	uint32_t	Y;
-	uint32_t	Width;
-	uint32_t	Height;
-	uint32_t	BearingY;
-}FONTFILE_GLYPH;
-#pragma pack( )
 
 class QImage;
 
@@ -79,6 +37,8 @@ public:
 
 	void CreateGlyphs( const QString &p_Characters );
 
+	FontFile GetFontFile( ) const;
+
 private:
 	typedef std::vector< FONT_RENDER > FontArray;
 	typedef std::vector< FONTFILE_GLYPH > GlyphArray;
@@ -96,10 +56,11 @@ private:
 	int		m_Height;
 	int		m_PointSize;
 
-	QString	m_FontFile;
+	QString	m_FontFileName;
 	QString	m_Characters;
 
+	FontFile	m_FontFile;
 };
 
-#endif // __ZEETOOL_FONTCREATOR_FONTWIDGET_H__
+#endif // __ZEDTOOL_FONTCREATOR_FONTWIDGET_H__
 
