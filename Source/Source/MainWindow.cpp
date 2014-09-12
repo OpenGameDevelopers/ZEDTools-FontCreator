@@ -39,17 +39,18 @@ int MainWindow::Initialise( )
 	if( m_pFontWidget->Initialise( ) == 0 )
 	{
 		m_pFontWidget->SetDimensions( 256, 256 );
-		m_pFontWidget->SetPointSize( 20 );
+		m_pFontWidget->SetPointSize( 16 );
 		m_pFontWidget->SetPadding( 3 );
 
 		QString Glyphs;
 
-		for( int i = 0; i < 26+6+26+17; ++i )
-		{
-			Glyphs[ i ] = '0'+i;
-		}
+		char GlyphChar = ' ';
 
-		Glyphs[ 26+6+26+17 ] = '\0';
+		while( GlyphChar != 0x7F )
+		{
+			Glyphs.append( GlyphChar );
+			++GlyphChar;
+		}
 
 		m_pFontWidget->CreateGlyphs( Glyphs );
 	}

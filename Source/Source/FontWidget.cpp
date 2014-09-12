@@ -212,7 +212,7 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			QBrush( QColor( 0, 0, 0, 0 ) ) );
 		OverlayPainter.translate( m_Padding, m_Padding );
 
-		char GlyphChar = '0';
+		char GlyphChar = ' ';
 
 		FontArray::iterator BeginningItr = FaceItr;
 		std::vector< int > LineSpacing;
@@ -335,7 +335,7 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 
 			FONTFILE_GLYPH FileGlyph;
-			FileGlyph.Character = '0' + GlyphCounter;
+			FileGlyph.Character = ' ' + GlyphCounter;
 			FileGlyph.X = CurrentXPosition;
 			FileGlyph.Y = CurrentYPosition + ( *LineSpace ) + ( *FaceItr ).YOffset - 1;
 			FileGlyph.Width = ( *FaceItr ).Face->glyph->bitmap.width;
@@ -465,9 +465,11 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 
 		WidgetPainter.drawImage( Source, m_SpriteFont, Source );
 		WidgetPainter.drawImage( Source, OverlayImage, Source );
-
 		
 		m_FontFile.SetQImage( m_SpriteFont );
+
+		WriteQImageToTarga( m_SpriteFont, "Sprite.tga" );
+		this->WriteGlyphArray( );
 
 		printf( "Redraw\n" );
 	}
