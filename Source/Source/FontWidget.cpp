@@ -65,6 +65,8 @@ void FontWidget::SetDimensions( const int p_Width, const int p_Height )
 {
 	setMinimumSize( p_Width, p_Height );
 	setMaximumSize( p_Width, p_Height );
+	m_Width = p_Width;
+	m_Height = p_Height;
 
 	printf( "Width: %d\nHeight: %d\n", p_Width, p_Height );
 }
@@ -333,11 +335,11 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			Error = FT_Render_Glyph( ( *FaceItr ).Face->glyph,
 				FT_RENDER_MODE_NORMAL );
 
-
 			FONTFILE_GLYPH FileGlyph;
 			FileGlyph.Character = ' ' + GlyphCounter;
 			FileGlyph.X = CurrentXPosition;
-			FileGlyph.Y = CurrentYPosition + ( *LineSpace ) + ( *FaceItr ).YOffset - 1;
+			FileGlyph.Y = CurrentYPosition + ( *LineSpace ) +
+				( *FaceItr ).YOffset;
 			FileGlyph.Width = ( *FaceItr ).Face->glyph->bitmap.width;
 			FileGlyph.Height = ( *FaceItr ).Face->glyph->bitmap.rows;
 			FileGlyph.BearingY = ( *FaceItr ).Overhang;
@@ -374,7 +376,10 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 				printf( "Current max height:   %d\n", CurrentMaxHeight );
 
 				FileGlyph.X = m_Padding;
-				FileGlyph.Y = CurrentYPosition + m_Padding + ( *LineSpace ) + ( *FaceItr ).YOffset;
+				FileGlyph.Y = CurrentYPosition + m_Padding + ( *LineSpace ) +
+					( *FaceItr ).YOffset;
+
+				printf( "FileGlyph.Y: %d\n", FileGlyph.Y );
 			}
 
 
