@@ -57,7 +57,7 @@ void FontFile::SetQImage( const QImage &p_Image )
 {
     if( m_pTarga )
     {
-	this->ClearTarga( );
+        this->ClearTarga( );
     }
 
     m_TargaSize = ( p_Image.width( ) * p_Image.height( ) * 4 ) +
@@ -77,7 +77,7 @@ void FontFile::SetQImage( const QImage &p_Image )
 
     size_t DataOffset = 0;
 
-    for( int i = p_Image.height( ); i > 0; --i )
+    for( int i = p_Image.height( ) - 1; i > -1; --i )
     {
 	    QRgb *Line = ( QRgb* )( p_Image.scanLine( i ) );
 	    memcpy( &pImageData[ DataOffset ], Line, p_Image.bytesPerLine( ) );
@@ -90,8 +90,8 @@ void FontFile::SetQImage( const QImage &p_Image )
 
     if( pImageData )
     {
-	delete [ ] pImageData;
-	pImageData = nullptr;
+        delete [ ] pImageData;
+        pImageData = nullptr;
     }
 }
 

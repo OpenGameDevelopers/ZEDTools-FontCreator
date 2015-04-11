@@ -24,7 +24,7 @@ bool WriteQImageToTarga( const QImage &p_Image, const QString p_Path )
 
 	size_t DataOffset = 0;
 
-	for( int i = p_Image.height( ); i > 0; --i )
+    for( int i = p_Image.height( ) -1; i > -1; --i )
 	{
 		QRgb *Line = ( QRgb* )( p_Image.scanLine( i ) );
 		memcpy( &pImageData[ DataOffset ], Line, p_Image.bytesPerLine( ) );

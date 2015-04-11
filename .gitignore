@@ -5,6 +5,8 @@ Bin
 bin
 Build
 build
+Build-*
+build-*
 Lib
 lib
 Debug
@@ -33,7 +35,7 @@ Gen
 *.aps
 *.pch
 local.properties
-Source/Makefile
+Source/Makefile*
 
 # Temporary Vim #
 *.swp

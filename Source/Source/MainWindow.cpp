@@ -98,13 +98,13 @@ void MainWindow::OpenFontFile( )
 
 void MainWindow::WriteFontFile( )
 {
-	QString FileName = QFileDialog::getSaveFileName( this, tr( "Save font" ),
+    QString FileName = QFileDialog::getSaveFileName( this, tr( "Save font" ),
 		tr( "" ), tr( "ZED Font File (*.zed)" ) );
 	
 	// Check if the .zed extension has been applied
 
 	printf( "%s\n", FileName.toUtf8( ).constData( ) );
 
-	m_pFontWidget->GetFontFile( ).Write( FileName.toUtf8( ).constData( ) );
+    m_pFontWidget->GetFontFile( ).Write( FileName.toUtf8( ).constData( ) );
 }
 

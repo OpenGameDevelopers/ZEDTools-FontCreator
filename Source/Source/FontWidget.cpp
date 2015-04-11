@@ -180,27 +180,26 @@ FontFile FontWidget::GetFontFile( ) const
 
 void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 {
-	QWidget::paintEvent( p_pPaintEvent );
+    QWidget::paintEvent( p_pPaintEvent );
 
 	if( m_FTLibrary )
 	{
 		FT_Error Error = FT_Err_Ok;
 
-		QImage	m_SpriteFont;
+        QImage m_SpriteFont = QImage( this->size( ), QImage::Format_ARGB32 );
+        QImage OverlayImage = QImage( this->size( ), QImage::Format_ARGB32 );
 
-		m_SpriteFont = QImage( this->size( ), QImage::Format_ARGB32 );
-		QPainter OverlayPainter;
-		QImage OverlayImage = QImage( this->size( ), QImage::Format_ARGB32 );
-		OverlayPainter.begin( &OverlayImage );
+        OverlayImage.fill( QColor( 0, 0, 0, 0 ) );
+        m_SpriteFont.fill( QColor( 0, 0, 0, 0 ) );
 
-		QPainter Painter;
+        QPainter OverlayPainter;
+        QPainter Painter;
 
+        OverlayPainter.begin( &OverlayImage );
 		Painter.begin( &m_SpriteFont );
 
 		FontArray::iterator FaceItr = m_Faces.begin( );
 
-		Painter.fillRect( Painter.window( ),
-			QBrush( QColor( 0, 0, 0, 0 ) ) );
 		QPen OutlinePen( QColor( 0, 255, 0, 255 ), 1 );
 		QPen BaseLinePen( QColor( 255, 0, 0, 255 ), 1 );
 		QPen AdvancePen( QColor( 0, 255, 255, 255 ), 1 );
@@ -382,7 +381,6 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 				printf( "FileGlyph.Y: %d\n", FileGlyph.Y );
 			}
 
-
 			m_GlyphArray.push_back( FileGlyph );
 
 			m_FontFile.AddGlyph( FileGlyph );
@@ -424,7 +422,7 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 			OverlayPainter.setPen( BaseLinePen );
 			// Base line
 			OverlayPainter.drawLine( ( *FaceItr ).Rect.x( ),
-				( *FaceItr ).Face->glyph->metrics.horiBearingY / 64,
+                ( *FaceItr ).Face->glyph->metrics.horiBearingY / 64,
 				( *FaceItr ).Rect.width( ),
 				( *FaceItr ).Face->glyph->metrics.horiBearingY / 64);
 
@@ -456,9 +454,9 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 				( *FaceItr ).Face->glyph->bitmap.width + m_Padding,
 				-( *FaceItr ).YOffset );
 			++GlyphCounter;
-		}
+        }
 
-		Painter.end( );
+        Painter.end( );
 		OverlayPainter.end( );
 
 		QPainter WidgetPainter( this );
@@ -466,15 +464,15 @@ void FontWidget::paintEvent( QPaintEvent *p_pPaintEvent )
 		QRect Source( 0.0f, 0.0f, this->width( ), this->height( ) );
 
 		WidgetPainter.fillRect( WidgetPainter.window( ),
-			QBrush( QColor( 0, 0, 0, 255 ) ) );
+            QBrush( QColor( 0, 0, 0, 255 ) ) );
 
-		WidgetPainter.drawImage( Source, m_SpriteFont, Source );
-		WidgetPainter.drawImage( Source, OverlayImage, Source );
+        WidgetPainter.drawImage( Source, m_SpriteFont );
+        WidgetPainter.drawImage( Source, OverlayImage, Source );
 		
-		m_FontFile.SetQImage( m_SpriteFont );
+        m_FontFile.SetQImage( m_SpriteFont );
 
-		WriteQImageToTarga( m_SpriteFont, "Sprite.tga" );
-		this->WriteGlyphArray( );
+        WriteQImageToTarga( m_SpriteFont, "Sprite.tga" );
+        this->WriteGlyphArray( );
 
 		printf( "Redraw\n" );
 	}
